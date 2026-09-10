@@ -1,39 +1,49 @@
 import os
 from groq import Groq
 import streamlit as st
-from dotenv import load_dotenv
 
-load_dotenv()
-
+# Configuração da página
 st.set_page_config(page_title="Agente IA - Groq", page_icon="🤖")
 st.title("🤖 Chatbot Inteligente")
 
+# Pega a chave da API diretamente do secrets do Streamlit Cloud ou do ambiente
+api_key = None
 try:
-    api_key = st.secrets["GROQ_API_KEY"]
+    if "GROQ_API_KEY" in st.secrets:
+        api_key = st.secrets["GROQ_API_KEY"]
 except Exception:
-    api_key = os.getenv("GROQ_API_KEY")
+    pass
 
 if not api_key:
+    api_key = os.getenv("GROQ_API_KEY")
+
+# Se continuar vazia, avisa na tela e para a execução para não dar erro crash
+if not api_key:
     st.error(
-        "⚠️ A chave da API da Groq (`GROQ_API_KEY`) não foi encontrada. "
-        "Configure-a nos *Secrets* do Streamlit Cloud ou no arquivo `.env`."
+        "⚠️ Chave da API da Groq não encontrada! "
+        "Adicione a chave `GROQ_API_KEY` na aba **Secrets** do painel do Streamlit Cloud."
     )
     st.stop()
 
+# Inicializa o cliente da Groq com segurança
 client = Groq(api_key=api_key)
 
+# Inicializa o histórico de mensagens na sessão do Streamlit
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Exibe o histórico de mensagens armazenadas na interface
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Campo de entrada de texto para a pergunta do usuário
 if prompt := st.chat_input("Digite sua pergunta..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Gera a resposta do modelo Groq
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         try:
@@ -47,6 +57,7 @@ if prompt := st.chat_input("Digite sua pergunta..."):
             )
             resposta = chat_completion.choices[0].message.content
             message_placeholder.markdown(resposta)
+
             st.session_state.messages.append(
                 {"role": "assistant", "content": resposta}
             )
