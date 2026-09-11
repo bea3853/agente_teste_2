@@ -58,20 +58,3 @@ if prompt := st.chat_input("Digite sua pergunta..."):
 
 
 
-# from groq import Groq
-
-
-# client = Groq(api_key="")
-
-# pergunta = input('Digite uma pergunta: ')
-
-
-# chat_completion = client.chat.completions.create(
-#     messages=[
-#         {"role": "user", "content": pergunta}
-#     ],
-#   model="openai/gpt-oss-120b",
-# )
-
-
-# print(chat_completion.choices[0].message.content)
